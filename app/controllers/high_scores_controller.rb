@@ -1,4 +1,7 @@
 class HighScoresController < ApplicationController
+
+  protect_from_forgery :except => :create 
+
   # GET /high_scores
   # GET /high_scores.json
   def index

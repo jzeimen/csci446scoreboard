@@ -1,20 +1,27 @@
 var guessesLeft = 10;
-var highScores = new Array([9, "HarryJamesPotter"], [3, "ZedCthulhu"], [2, "NearlyDied"]);
+//var highScores = new Array([9, "HarryJamesPotter"], [3, "ZedCthulhu"], [2, "NearlyDied"]);
 var randomNumber = 9;
 
 $(document).ready(function(){
   updateScore(guessesLeft);
-  populateHighScores(highScores);
+  populateHighScores();
 })
 
 
-function populateHighScores(scores) {
-	scores.sort(function(a,b) { return b[0] - a[0]; });
-
-	$('div#highScores').html("");
-  for (var i = 0; i < scores.length; ++i) {
-    $('div#highScores').append("<p>" + scores[i][0] + " " + scores[i][1] + "</p>");
-  }
+function populateHighScores() {
+	var scores = new Array();
+	$.getJSON("/high_scores.json", function (data){
+		$.each(data, function (index, value){
+			console.log(value.score);
+			console.log(value.name);
+			scores.push([value.score, value.name]);
+			scores.sort(function(a,b) { return b[0] - a[0]; });
+			$('div#highScores').html("");
+			for (var i = 0; i < scores.length; ++i) {
+				$('div#highScores').append("<p>" + scores[i][0] + " " + scores[i][1] + "</p>");
+			}
+		});
+	});
 }
 
 function updateScore(score) {
@@ -54,9 +61,29 @@ function submitGuess() {
 
 function submitName(){
 	var name = $('#guess').val();
-	highScores.push([guessesLeft, name,]);
-	populateHighScores(highScores);
+	sendScore();
+	populateHighScores();
 	playAgainButton();
+}
+
+
+
+function sendScore(){
+	var name = $('#guess').val();
+	$.ajax("/high_scores.json", {
+		type: "POST",
+		 data:{ high_score : {
+		 	score: guessesLeft,
+		 	name: name
+		 }},
+		 error: function(errorData) {
+		 	console.log(errorData)
+		 }
+	    });
+	console.log({
+		 	score: guessesLeft,
+		 	name: name
+		 });
 }
 
 function playAgainButton(){
